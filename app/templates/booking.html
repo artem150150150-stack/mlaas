@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center {% if booking.is_confirmed %}bg-success text-white{% else %}bg-warning{% endif %}">
+            <h1>Бронирование #{{ booking.id }}</h1>
+            <div>
+                <a class="btn btn-warning btn-sm" href="{{ url_for('update_booking', booking_id=booking.id) }}">Изменить</a>
+                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Удалить</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Информация о бронировании</h4>
+                    <p>
+                        <strong>Статус:</strong> 
+                        {% if booking.is_confirmed %}
+                            <span class="badge badge-success">Подтверждено</span>
+                        {% else %}
+                            <span class="badge badge-warning">Ожидает подтверждения</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Дата заезда:</strong> {{ booking.check_in_date.strftime('%d.%m.%Y') }}</p>
+                    <p><strong>Дата выезда:</strong> {{ booking.check_out_date.strftime('%d.%m.%Y') }}</p>
+                    <p><strong>Дата бронирования:</strong> {{ booking.booking_date.strftime('%d.%m.%Y %H:%M') }}</p>
+                    <p><strong>Общая стоимость:</strong> {{ booking.total_price }} ₽</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Информация о госте</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>ФИО:</strong> <a href="{{ url_for('user', user_id=booking.guest.id) }}">{{ booking.guest.name }}</a></p>
+                            <p><strong>Email:</strong> {{ booking.guest.email }}</p>
+                            <p><strong>Телефон:</strong> {{ booking.guest.phone or 'Не указан' }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Информация о номере</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Отель:</strong> <a href="{{ url_for('hotel', hotel_id=booking.room.hotel.id) }}">{{ booking.room.hotel.name }}</a></p>
+                            <p><strong>Номер:</strong> <a href="{{ url_for('room', room_id=booking.room.id) }}">{{ booking.room.room_number }}</a></p>
+                            <p><strong>Тип:</strong> {{ booking.room.room_type }}</p>
+                            <p><strong>Вместимость:</strong> {{ booking.room.capacity }} чел.</p>
+                            <p><strong>Цена за ночь:</strong> {{ booking.room.hotel.price_per_night }} ₽</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal для подтверждения удаления -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить бронирование #{{ booking.id }}?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <form action="{{ url_for('delete_booking', booking_id=booking.id) }}" method="POST">
+                        <input class="btn btn-danger" type="submit" value="Удалить">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %} 

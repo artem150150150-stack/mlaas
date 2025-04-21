@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Настройки двухфакторной аутентификации</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% if not current_user.otp_enabled %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <h4>Активировать двухфакторную аутентификацию</h4>
+                                    <p>Повысьте безопасность вашего аккаунта, активировав двухфакторную аутентификацию.</p>
+                                    <ol>
+                                        <li>Скачайте приложение для аутентификации, например Google Authenticator, Microsoft Authenticator или Authy</li>
+                                        <li>Отсканируйте QR-код своим приложением</li>
+                                        <li>Введите код из приложения для подтверждения</li>
+                                    </ol>
+                                </div>
+
+                                <form method="POST" action="">
+                                    {{ enable_form.hidden_tag() }}
+                                    <input type="hidden" name="enable_2fa" value="1">
+                                    <div class="form-group mb-3">
+                                        {{ enable_form.token.label(class="form-control-label") }}
+                                        {% if enable_form.token.errors %}
+                                            {{ enable_form.token(class="form-control is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in enable_form.token.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            {{ enable_form.token(class="form-control", placeholder="Введите 6-значный код") }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ enable_form.submit(class="btn btn-primary") }}
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <h4>QR-код</h4>
+                                <p>Отсканируйте этот QR-код вашим приложением для аутентификации:</p>
+                                <div class="mb-3">
+                                    <img src="{{ qr_code }}" alt="QR Code" class="img-fluid">
+                                </div>
+                                <div class="mb-3">
+                                    <p><strong>Или введите этот ключ вручную:</strong></p>
+                                    <div class="alert alert-secondary">{{ secret }}</div>
+                                </div>
+                                <p class="text-danger"><strong>Внимание!</strong> Сохраните резервную копию секретного ключа в надежном месте.</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center mb-4">
+                            <div class="alert alert-success">
+                                <h4 class="alert-heading">Двухфакторная аутентификация активирована!</h4>
+                                <p>Ваш аккаунт защищен с помощью двухфакторной аутентификации.</p>
+                            </div>
+                        </div>
+                        <form method="POST" action="">
+                            {{ disable_form.hidden_tag() }}
+                            <input type="hidden" name="disable_2fa" value="1">
+                            <div class="form-group text-center">
+                                {{ disable_form.submit(class="btn btn-danger") }}
+                                <p class="mt-2 text-muted">Отключение 2FA снижает безопасность вашего аккаунта.</p>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %} 

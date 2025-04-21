@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">Добро пожаловать в систему бронирования отелей</h1>
+        <p class="lead">Данная система позволяет управлять отелями, номерами и бронированиями.</p>
+    </div>
+
+    <h2 class="mb-4">Наши отели</h2>
+    
+    <div class="row">
+        {% if hotels %}
+            {% for hotel in hotels %}
+                <div class="col-md-4">
+                    <div class="card hotel-card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ hotel.name }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ hotel.location }}</h6>
+                            <p class="card-text">
+                                {% if hotel.description %}
+                                    {{ hotel.description[:100] }}{% if hotel.description|length > 100 %}...{% endif %}
+                                {% else %}
+                                    Нет описания
+                                {% endif %}
+                            </p>
+                            <p class="card-text"><strong>Цена за ночь:</strong> {{ hotel.price_per_night }} ₽</p>
+                            <a href="{{ url_for('hotel', hotel_id=hotel.id) }}" class="btn btn-primary">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    На данный момент отелей нет в системе. <a href="{{ url_for('new_hotel') }}">Добавить отель</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %} 

@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h1>Номер {{ room.room_number }} - {{ room.hotel.name }}</h1>
+            <div>
+                <a class="btn btn-warning btn-sm" href="{{ url_for('update_room', room_id=room.id) }}">Изменить</a>
+                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Удалить</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Отель:</strong> <a href="{{ url_for('hotel', hotel_id=room.hotel.id) }}">{{ room.hotel.name }}</a></p>
+                    <p><strong>Тип номера:</strong> {{ room.room_type }}</p>
+                    <p><strong>Вместимость:</strong> {{ room.capacity }} чел.</p>
+                    <p>
+                        <strong>Статус:</strong> 
+                        {% if room.is_available %}
+                            <span class="badge badge-success">Доступен</span>
+                        {% else %}
+                            <span class="badge badge-danger">Занят</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Цена за ночь:</strong> {{ room.hotel.price_per_night }} ₽</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>История бронирований</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if room.bookings %}
+                                <ul class="list-group">
+                                    {% for booking in room.bookings %}
+                                        <li class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span><a href="{{ url_for('booking', booking_id=booking.id) }}">Бронирование #{{ booking.id }}</a></span>
+                                                <span>
+                                                    {% if booking.is_confirmed %}
+                                                        <span class="badge badge-success">Подтверждено</span>
+                                                    {% else %}
+                                                        <span class="badge badge-warning">Ожидает подтверждения</span>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ booking.check_in_date.strftime('%d.%m.%Y') }} - {{ booking.check_out_date.strftime('%d.%m.%Y') }}
+                                            </small><br>
+                                            <small class="text-muted">Гость: <a href="{{ url_for('user', user_id=booking.guest.id) }}">{{ booking.guest.name }}</a></small>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">Этот номер еще не был забронирован.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if room.is_available %}
+        <div class="d-flex justify-content-end mb-4">
+            <a class="btn btn-primary" href="{{ url_for('new_booking') }}">Забронировать этот номер</a>
+        </div>
+    {% endif %}
+
+    <!-- Modal для подтверждения удаления -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить номер "{{ room.room_number }}" отеля "{{ room.hotel.name }}"? Все бронирования, связанные с этим номером, также будут удалены.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <form action="{{ url_for('delete_room', room_id=room.id) }}" method="POST">
+                        <input class="btn btn-danger" type="submit" value="Удалить">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %} 

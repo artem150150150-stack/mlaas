@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h1>{{ legend }}</h1>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.room_number.label(class="form-control-label") }}
+                    {% if form.room_number.errors %}
+                        {{ form.room_number(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.room_number.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.room_number(class="form-control") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.room_type.label(class="form-control-label") }}
+                    {% if form.room_type.errors %}
+                        {{ form.room_type(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.room_type.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.room_type(class="form-control") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.capacity.label(class="form-control-label") }}
+                    {% if form.capacity.errors %}
+                        {{ form.capacity(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.capacity.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.capacity(class="form-control") }}
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.hotel_id.label(class="form-control-label") }}
+                    {% if form.hotel_id.errors %}
+                        {{ form.hotel_id(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.hotel_id.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.hotel_id(class="form-control") }}
+                    {% endif %}
+                </div>
+                <div class="form-check mb-4">
+                    {{ form.is_available(class="form-check-input") }}
+                    {{ form.is_available.label(class="form-check-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a class="btn btn-secondary" href="{{ url_for('rooms') }}">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %} 
