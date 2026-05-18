@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/lumenml
+  rabbitmq:
+    host: rabbitmq
+
+lumenml:
+  storage:
+    datasets-dir: ${LUMENML_STORAGE_DATASETS_DIR:/data/datasets}

@@ -1,6 +1,0 @@
-[MASTER]
-# Многопроцессорный режим
-jobs=1
-
-ignore=CVS,venv,env,.git,__pycache__
-max-line-length=110

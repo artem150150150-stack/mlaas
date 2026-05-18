@@ -1,0 +1,80 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: lumenml
+      POSTGRES_USER: lumenml
+      POSTGRES_PASSWORD: lumenml
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U lumenml -d lumenml']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-use-256-bit-secret-key-for-production-please}
+      LUMENML_STORAGE_DATASETS_DIR: /data/datasets
+    volumes:
+      - datasets:/data/datasets
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8080:8080'
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,worker
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-use-256-bit-secret-key-for-production-please}
+      LUMENML_STORAGE_DATASETS_DIR: /data/datasets
+    volumes:
+      - datasets:/data/datasets
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+
+  gateway:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - '9080:80'
+    depends_on:
+      - web
+      - api
+
+volumes:
+  pgdata: {}
+  datasets: {}

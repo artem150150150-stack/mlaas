@@ -1,100 +1,40 @@
-# Система бронирования отелей
+# LumenML — MLaaS с explainability и smart optimization
 
-Веб-приложение на Flask для управления бронированием отелей, комнат и гостей.
+Стек: **Java 21**, **Spring Boot 3**, **PostgreSQL**, **RabbitMQ**, **Smile ML**, **React + Vite + TypeScript**, **Docker Compose**.
 
-## Функциональность
-
-- Управление отелями
-- Управление комнатами
-- Управление пользователями
-- Управление бронированиями
-- Двухфакторная аутентификация (2FA) для безопасности
-
-## Установка
-
-1. Клонируйте репозиторий
+## Быстрый старт (Docker)
 
 ```bash
-git clone https://github.com/yourusername/hotel-booking-system.git
-cd hotel-booking-system
+cd lumenml
+docker compose up --build
 ```
 
-2. Создайте виртуальное окружение и активируйте его
+- API: `http://localhost:8080` (напрямую) или через шлюз `http://localhost:9080/api/v1/...`
+- UI (Nginx SPA): внутри compose сервис `web`; единая точка **http://localhost:9080** (прокси на UI + API)
+- RabbitMQ Management: `http://localhost:15672` (guest/guest)
 
-```bash
-python -m venv venv
-source venv/bin/activate  # Для Linux/Mac
-venv\Scripts\activate     # Для Windows
-```
+Администратор (создаётся при старте): `admin@lumenml.dev` / `Admin123!`
 
-3. Установите зависимости
+## Локальная разработка
 
-```bash
-pip install -r requirements.txt
-```
+1. PostgreSQL и RabbitMQ локально или через Docker только инфраструктуру.
+2. Backend: `cd backend && mvn spring-boot:run`
+3. Frontend: `cd frontend && npm install && npm run dev` (прокси `/api` → `localhost:8080`)
 
-## Запуск приложения
+Переменные: `JWT_SECRET`, каталог датасетов `LUMENML_STORAGE_DATASETS-DIR` (или `DATASETS_DIR` в `application.yml`).
 
-```bash
-python run.py
-```
+## Пример CSV
 
-После запуска приложение будет доступно по адресу [http://localhost:5000](http://localhost:5000)
+Файл `samples/iris.csv`: целевая колонка `species`, признаки `sepal_length,sepal_width,petal_length,petal_width`, задача **CLASSIFICATION**.
 
-## Заполнение базы данных тестовыми данными
+## Worker
 
-```bash
-flask seed
-```
+Профиль Spring `worker` включает RabbitMQ-listeners обучения и вспомогательных очередей. В Docker сервис `worker` запускается с `SPRING_PROFILES_ACTIVE=docker,worker`.
 
-## Обновление схемы базы данных
+## Архитектура
 
-```bash
-flask migrate
-```
+- REST API `/api/v1` — JWT, роли USER/ADMIN, rate limiting, OpenAPI `/swagger-ui.html`
+- Очереди: `training.jobs` (DLX → `training.jobs.dlq`), `notification.events`, `metrics.processing`
+- Обучение: Smile (Random Forest, Gradient Boosting как XGBoost-подобная модель, Logistic / Linear regression), метрики, SHAP (где доступно), рекомендации
 
-## Проверка кода с помощью pylint
-
-Проверка кода с помощью pylint:
-
-```bash
-python lint.py
-```
-
-Или выполнить проверку для конкретного файла/модуля:
-
-```bash
-pylint app/routes.py
-```
-
-## Структура проекта
-
-```
-├── app/
-│   ├── __init__.py
-│   ├── models.py
-│   ├── routes.py
-│   ├── forms.py
-│   ├── commands.py
-│   ├── migrate_db.py
-│   ├── seed.py
-│   ├── templates/
-│   └── static/
-├── run.py
-├── create_admin.py
-├── lint.py
-├── requirements.txt
-├── setup.cfg
-└── .pylintrc
-```
-
-## Настройка двухфакторной аутентификации (2FA)
-
-1. Войдите в систему, используя учетные данные администратора
-2. Нажмите на имя пользователя в правом верхнем углу и выберите "Настройки 2FA"
-3. Отсканируйте QR-код с помощью приложения аутентификации (Google Authenticator, Authy, и т.д.)
-4. Введите 6-значный код из приложения и нажмите "Активировать"
-
-## Лицензия
-
-MIT 
+Подробнее см. исходники пакетов `com.lumenml.api`, `service`, `rabbit`, `ml`.
